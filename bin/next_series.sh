@@ -26,7 +26,7 @@ echo $SERIES
 
 STARTING_COMMIT="$2"
 
-if test "x$3" ="xRFC" ; then
+if test "x$3" = "xRFC" ; then
     S_PREFIX=RFC
 else
     S_PREFIX=PATCH
@@ -70,26 +70,24 @@ fi
 
 NEW_COVER="${NEW_SERIES}/0000-cover-letter.patch"
 
-if test "x${V}" = "x" ; then
-    REGEX='s,^Subject: \[(.*)\](.*)$,\1[\2 v2]\3,'
-else
-    REGEX='s,^Subject: \[(.*)v[0-9]*(.*)\](.*)$,[\1v'${NEW_V}'\2]\3,'
-fi
+REGEX='s,^Subject: \[(.*)\] (.*)$,\2,'
 SUBJECT=`grep "^Subject: " ${COVER} | ${SED} "${REGEX}"`
 TO_LIST=`grep "^To: " ${COVER} | ${SED} 's,\$,\\\,'`
 CC_LIST=`grep "^Cc: " ${COVER} | ${SED} 's,\$,\\\,' | head --bytes=-2`
-TEXT=`cat ${COVER} | ${SED} -n '/^Subject: /,/^Claudio$/p' | tail --lines=+2 | ${SED} 's,\$,\\\,'`
+TEXT=`cat ${COVER} | ${SED} -n '0,/^Claudio$/ {/^$/,$p}' | tail --lines=+2 | ${SED} 's,\$,\\\,'`
 
-git format-patch -q --cover-letter --subject-prefix="${S_PREFIX} v{$NEW_V}" ${STARTING_COMMIT}
-mv *.patch ${NEW_SERIES}/
+git format-patch -O scripts/git.orderfile -q --cover-letter --subject-prefix="${S_PREFIX} v${NEW_V}" ${STARTING_COMMIT}
+cp *.patch ${NEW_SERIES}/
 
-${SED} -i 's,^Subject: .*$,Subject: '"${SUBJECT}"',' ${NEW_COVER}
+${SED} -i 's,^Subject: \[(.*)\].*$,Subject: [\1] '"${SUBJECT}"',' ${NEW_COVER}
 
 ${SED} -i '/^\*\*\* BLURB HERE \*\*\*.*$/ a\
 '"${TEXT}"'
 ' ${NEW_COVER}
 
-for PATCH in `ls ${NEW_SERIES}/*.patch`; do
+PATCHES=`ls ${NEW_SERIES}/*.patch`
+
+for PATCH in ${PATCHES} ; do
 
     ${SED} -i '/^From: .*$/ a\
 '"${TO_LIST}"'
@@ -97,3 +95,11 @@ for PATCH in `ls ${NEW_SERIES}/*.patch`; do
 ' ${PATCH}
 
 done
+
+set +e
+for PATCH in ${PATCHES} ; do
+    echo "Comparing ${PATCH}"
+    diff ${PATCH} `echo ${PATCH} | ${SED} "s,${NEW_SERIES},.,"`
+done
+
+rm *.patch
