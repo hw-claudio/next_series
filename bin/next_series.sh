@@ -11,13 +11,13 @@ fi
 SED="sed -E"
 
 if test "x$1" = "x" ; then
-    echo "Missing SERIES_NAME!"
-    echo "Usage: next_series.sh SERIES_NAME starting_commitid [RFC]"
+    echo "Missing SERIES_DIRNAME!"
+    echo "Usage: next_series.sh SERIES_DIRNAME starting_commitid [RFC]"
     exit 1
 fi
 if test "x$2" = "x"; then
     echo "Missing starting_commitid!"
-    echo "Usage: next_series.sh SERIES_NAME starting_commitid [RFC]"
+    echo "Usage: next_series.sh SERIES_DIRNAME starting_commitid [RFC]"
     exit 1
 fi
 
