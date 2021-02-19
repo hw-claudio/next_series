@@ -12,12 +12,12 @@ SED="sed -E"
 
 if test "x$1" = "x" ; then
     echo "Missing SERIES_DIRNAME!"
-    echo "Usage: new_series.sh SERIES_DIRNAME starting_commitid [RFC]"
+    echo "Usage: new_series.sh SERIES_DIRNAME starting_commitid [RFC] [[--cc=X] [--to=Y]...]"
     exit 1
 fi
 if test "x$2" = "x" ; then
     echo "Missing starting_commitid!"
-    echo "Usage: new_series.sh SERIES_DIRNAME starting_commitid [RFC]"
+    echo "Usage: new_series.sh SERIES_DIRNAME starting_commitid [RFC] [[--cc=X] [--to=Y]...]"
     exit 1
 fi
 
@@ -39,9 +39,26 @@ STARTING_COMMIT="$2"
 
 if test "x$3" = "xRFC" ; then
     S_PREFIX=RFC
+    shift
 else
     S_PREFIX=PATCH
 fi
+
+shift
+shift
+
+TO_ARG_LIST=""
+CC_ARG_LIST=""
+
+while test "x$1" != "x" ; do
+    case $1 in
+        --cc=*) CC_ARG_LIST+=" $1" ;;
+	--to=*) TO_ARG_LIST+=" $1" ;;
+	*) echo "unrecognized option: $1"
+	   exit 1
+    esac
+    shift
+done
 
 if $IS_UPDATE ; then
     # compute the versions of the old and new series
@@ -96,7 +113,7 @@ if $IS_UPDATE ; then
 fi
 
 # generate the series
-git format-patch -O scripts/git.orderfile -q --cover-letter --subject-prefix="${S_PREFIX} v${NEW_V}" ${STARTING_COMMIT}
+git format-patch -O scripts/git.orderfile -q --cover-letter ${TO_ARG_LIST} ${CC_ARG_LIST} --subject-prefix="${S_PREFIX} v${NEW_V}" ${STARTING_COMMIT}
 cp *.patch ${NEW_SERIES}/
 
 if $IS_UPDATE ; then
