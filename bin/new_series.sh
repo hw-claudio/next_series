@@ -47,13 +47,13 @@ fi
 shift
 shift
 
-TO_ARG_LIST=""
-CC_ARG_LIST=""
+TO_ARG_LIST=()
+CC_ARG_LIST=()
 
 while test "x$1" != "x" ; do
     case $1 in
-        --cc=*) CC_ARG_LIST+=" $1" ;;
-	--to=*) TO_ARG_LIST+=" $1" ;;
+        --cc=*) CC_ARG_LIST+=("--cc=\"${1:5}\"") ;;
+	--to=*) TO_ARG_LIST+=("--to=\"${1:5}\"") ;;
 	*) echo "unrecognized option: $1"
 	   exit 1
     esac
@@ -113,7 +113,7 @@ if $IS_UPDATE ; then
 fi
 
 # generate the series
-git format-patch -O scripts/git.orderfile -q --cover-letter ${TO_ARG_LIST} ${CC_ARG_LIST} --subject-prefix="${S_PREFIX} v${NEW_V}" ${STARTING_COMMIT}
+git format-patch -O scripts/git.orderfile -q --cover-letter "${TO_ARG_LIST[@]}" "${CC_ARG_LIST[@]}" --subject-prefix="${S_PREFIX} v${NEW_V}" ${STARTING_COMMIT}
 cp *.patch ${NEW_SERIES}/
 
 if $IS_UPDATE ; then
