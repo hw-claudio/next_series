@@ -52,8 +52,8 @@ CC_ARG_LIST=()
 
 while test "x$1" != "x" ; do
     case $1 in
-        --cc=*) CC_ARG_LIST+=("--cc=\"${1:5}\"") ;;
-	--to=*) TO_ARG_LIST+=("--to=\"${1:5}\"") ;;
+        --cc=*) CC_ARG_LIST+=("--cc=${1:5}") ;;
+	--to=*) TO_ARG_LIST+=("--to=${1:5}") ;;
 	*) echo "unrecognized option: $1"
 	   exit 1
     esac
